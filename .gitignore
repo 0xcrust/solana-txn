@@ -1,0 +1,6 @@
+/target
+.env
+**/.assets
+notes/*
+js
+pg

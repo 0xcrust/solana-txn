@@ -1,0 +1,25 @@
+[package]
+name = "graceful-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+agave-feature-set = "2.3.7"
+agave-reserved-account-keys = "2.3.7"
+anyhow = {workspace = true}
+bincode = {workspace = true}
+borshv1 = {package = "borsh", version = "1.5.1"}
+solana-bincode = "2.2.1"
+solana-client = {workspace = true}
+solana-compute-budget = {workspace = true }
+solana-compute-budget-instruction = {workspace = true}
+solana-program = {workspace = true}
+solana-pubkey = {workspace = true}
+solana-sdk = {workspace = true}
+solana-sdk-ids = {workspace = true}
+solana-svm-transaction = {workspace = true}
+solana-transaction-status = {workspace = true}
+yellowstone-grpc-proto = {workspace = true }
+
+[dev-dependencies]
+tokio = {workspace = true}

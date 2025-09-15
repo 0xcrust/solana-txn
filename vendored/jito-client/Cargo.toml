@@ -1,0 +1,16 @@
+[package]
+name = "jito-searcher-client"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+futures-util = "0.3.28"
+jito-protos = {workspace = true}
+log = {workspace = true}
+prost-types = {workspace = true}
+solana-client = {workspace = true}
+solana-metrics = {workspace = true}
+solana-sdk = {workspace = true}
+thiserror = "1.0.40"
+tokio = {workspace = true}
+tonic = {workspace = true}

@@ -1,0 +1,15 @@
+[package]
+name = "jito-protos"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bincode = {workspace = true}
+prost = "0.12"
+prost-types = "0.12"
+solana-perf = {workspace=true}
+solana-sdk = {workspace=true}
+tonic = "0.10"
+
+[build-dependencies]
+tonic-build = "0.10"

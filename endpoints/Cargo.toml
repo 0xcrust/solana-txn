@@ -1,0 +1,39 @@
+[package]
+name = "graceful-endpoints"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = {workspace = true}
+base64 = {workspace = true}
+bincode = {workspace = true}
+builder-rs = {workspace = true}
+dashmap = {workspace = true}
+either = "1.15.0"
+futures = {workspace = true}
+futures-util = {workspace = true}
+graceful-core = {workspace = true}
+helius-laserstream = {workspace = true}
+itertools = {workspace = true}
+jito-protos = {workspace = true}
+jito-searcher-client = {workspace = true}
+log = {workspace = true}
+metrics = {workspace = true}
+rand = {workspace = true}
+reqwest = {workspace = true}
+serde = {workspace = true}
+serde_json = {workspace = true}
+sha2 = {workspace = true}
+solana-account = {workspace = true}
+solana-account-decoder = {workspace = true}
+solana-client = {workspace = true}
+solana-program = {workspace = true}
+solana-pubkey = {workspace = true}
+solana-rpc-client-api = {workspace = true}
+solana-sdk = {workspace = true}
+solana-sdk-ids = {workspace = true}
+solana-svm-transaction = {workspace = true}
+solana-transaction-status = {workspace = true}
+tokio = {workspace=true}
+tokio-tungstenite = {workspace = true}
+tonic = {workspace=true}
