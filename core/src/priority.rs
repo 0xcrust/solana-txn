@@ -188,9 +188,15 @@ mod test {
     const BASE_FEE_LAMPORTS: u64 = 5000;
     #[tokio::test]
     async fn test_compute_priority_details() {
-        let client = RpcClient::new("https://api.mainnet-beta.solana.com".to_string());
+        let rpc_url = if dotenv::dotenv().is_ok() {
+            std::env::var("RPC_URL").unwrap_or("https://api.mainnet-beta.solana.com".to_string())
+        } else {
+            "https://api.mainnet-beta.solana.com".to_string()
+        };
+        let client = RpcClient::new(rpc_url);
 
         for (signature, details) in FIXTURES {
+            println!("fetching transaction for signature {}", signature);
             let transaction = client
                 .get_transaction_with_config(
                     &Signature::from_str(signature).unwrap(),

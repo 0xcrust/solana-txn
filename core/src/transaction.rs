@@ -125,8 +125,6 @@ pub fn unified_tx_from_grpc(
         bail!("Missing transaction data in Geyser update");
     };
     let versioned_tx = create_tx_versioned(transaction).map_err(|e| anyhow!(e))?;
-    // let _signature = Signature::try_from(transaction_info.signature)
-    //     .map_err(|_| anyhow!("Failed converting signature from u8 array"))?;
     let recent_blockhash = *versioned_tx.message.recent_blockhash();
 
     let loaded_addresses = match meta.loaded_addresses.as_ref() {
