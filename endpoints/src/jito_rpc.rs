@@ -468,7 +468,7 @@ pub fn subscribe_jito_tips(
     tokio::spawn({
         let tips = tips.clone();
         async move {
-            let url = "ws://bundles-api-rest.jito.wtf/api/v1/bundles/tip_stream";
+            let url = "wss://bundles.jito.wtf/api/v1/bundles/tip_stream";
 
             loop {
                 let stream = match tokio_tungstenite::connect_async(url).await {

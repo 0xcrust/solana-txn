@@ -1,16 +1,21 @@
-use crate::jito_rpc::JITO_TIP_ACCOUNTS;
+use crate::jito_rpc::{JITO_TIP_ACCOUNTS, JitoClient};
 use crate::{BlockHashUpdate, FeeInfo, PendingTransaction, TransactionId, TransactionSourceId};
 use std::time::Instant;
 
 use anyhow::Context;
-use graceful_core::{priority::PriorityFee, tx_ext::ComputeMods};
+use graceful_core::{
+    priority::PriorityFee,
+    tx_ext::{ComputeMods, TransactionMods},
+};
 use itertools::Itertools;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use solana_client::rpc_client::SerializableTransaction;
 use solana_client::rpc_config::RpcSendTransactionConfig;
+use solana_sdk::compute_budget::ComputeBudgetInstruction;
 use solana_sdk::hash::Hash;
 use solana_sdk::signature::Signature;
+use solana_sdk::signer::Signer;
 use solana_sdk::signer::keypair::Keypair;
 use solana_sdk::transaction::VersionedTransaction;
 use std::sync::Arc;
@@ -43,7 +48,7 @@ pub struct SendTransactionData {
     pub config: SendTxConfig,
 }
 
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize)]
 pub struct SendTxConfig {
     /// send to rpc
     pub use_rpc: bool,
@@ -118,6 +123,7 @@ impl SendTransactionData {
         self.sent_at = Instant::now();
         self.send_slot = slot;
         self.attempts += 1;
+        self.last_valid_block_height = blockhash.last_valid_block_height;
 
         self.data = self.data.finalize(
             blockhash,
@@ -285,13 +291,25 @@ impl TransactionData {
         tip_increment: u64,
     ) -> anyhow::Result<Self> {
         if cu_increment > 0 {
-            self.tx.message.update_cu(self.fee.cu_price + cu_increment);
+            let cu_price = self.fee.cu_price + cu_increment;
+            if !self.tx.message.update_cu(cu_price) {
+                // insert if not found
+                let ix = ComputeBudgetInstruction::set_compute_unit_price(cu_price);
+                self.tx.message.insert_ix(0, ix);
+            }
         }
 
         if tip_increment > 0 {
-            self.tx
-                .message
-                .update_tip(self.fee.tip + tip_increment, &JITO_TIP_ACCOUNTS);
+            let tip = self.fee.tip + tip_increment;
+
+            if !self.tx.message.update_tip(tip, &JITO_TIP_ACCOUNTS) {
+                // insert if not found
+                let signer = self.signers[0].pubkey();
+                let ix = JitoClient::build_bribe_ix(&signer, tip);
+                self.tx
+                    .message
+                    .insert_ix(self.tx.message.instructions().len(), ix);
+            }
         }
 
         if cu_increment > 0 || tip_increment > 0 {

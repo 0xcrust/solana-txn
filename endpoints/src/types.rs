@@ -22,13 +22,16 @@ pub struct PendingTransaction {
 }
 
 impl PendingTransaction {
+    fn is_expired(&self, current_block_height: u64) -> bool {
+        current_block_height > self.last_valid_block_height
+    }
+
     fn is_not_expired(&self, current_block_height: u64) -> bool {
-        current_block_height <= self.last_valid_block_height
+        !self.is_expired(current_block_height)
     }
 
     fn is_recently_expired(&self, current_block_height: u64, last_block_height: u64) -> bool {
-        last_block_height <= self.last_valid_block_height
-            && current_block_height > self.last_valid_block_height
+        self.is_not_expired(last_block_height) && self.is_expired(current_block_height)
     }
 
     /// Transaction is not expired or recently expired between `current-block-height` and `last-block-height`

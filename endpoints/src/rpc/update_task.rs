@@ -12,8 +12,8 @@ use std::{
     time::Duration,
 };
 
-use anyhow::bail;
 use dashmap::DashMap;
+use log::warn;
 use solana_client::nonblocking::rpc_client::RpcClient;
 use tokio::sync::{RwLock, broadcast};
 
@@ -49,11 +49,11 @@ pub(crate) fn start_rpc_task(
     };
 
     if notify_txn_status {
-        bail!("transaction status streaming not supported over RPC");
+        warn!("transaction status streaming not supported over RPC");
     }
 
     if notify_txn {
-        bail!("transaction streaming not supported over RPC");
+        warn!("transaction streaming not supported over RPC");
     }
 
     if update_slot || notify_slot {

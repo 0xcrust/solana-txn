@@ -46,6 +46,7 @@ pub fn start_grpc_confirmation_task(
                         continue;
                     };
 
+                    trace!("grpc: confirmed tx {} from grpc tx-statuses queue", signature);
                     let response = ConfirmationResult {
                         id: data.id,
                         uuid: signature.to_string(),
@@ -73,7 +74,7 @@ pub fn start_grpc_confirmation_task(
 
                     for signature in expired_txns {
                         trace!(
-                            "Failed to confirm transaction with signature: {}",
+                            "grpc: Failed to confirm transaction with signature: {}",
                             signature
                         );
                         let Some((_, data)) = confirmation_queue.remove(&signature) else {

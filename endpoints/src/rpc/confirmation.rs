@@ -66,7 +66,7 @@ pub fn start_rpc_confirmation_task(
                                 .map(|(_, data)| (status, data))
                         })
                     {
-                        trace!("Confirmed transaction with signature: {}", signature);
+                        trace!("rpc: Confirmed transaction with signature: {}", signature);
                         let error = match status.err {
                             Some(TransactionError::AlreadyProcessed) | None => None,
                             Some(error) => Some(error),
@@ -84,7 +84,7 @@ pub fn start_rpc_confirmation_task(
 
                         if let Err(e) = confirmation_sender.send(response).await {
                             error!(
-                                "Failed sending confirmed tx {} over channel: {}",
+                                "rpc: Failed sending confirmed tx {} over channel: {}",
                                 signature, e
                             );
                         }
@@ -94,13 +94,13 @@ pub fn start_rpc_confirmation_task(
 
             let expired_txns = confirmation_queue
                 .iter()
-                .filter(|x| !x.validate_strict(current_block_height))
+                .filter(|x| !x.validate(current_block_height, last_block_height))
                 .map(|x| *x.key())
                 .collect::<Vec<_>>();
 
             for signature in expired_txns {
                 trace!(
-                    "Failed to confirm transaction with signature: {}",
+                    "rpc: Failed to confirm transaction with signature: {}",
                     signature
                 );
                 let Some((_, data)) = confirmation_queue.remove(&signature) else {

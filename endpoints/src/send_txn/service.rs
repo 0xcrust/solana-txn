@@ -67,6 +67,9 @@ pub struct TransactionService {
     /// Handle for scheduling transactions
     pub(crate) tx_sender: mpsc::Sender<SendTransactionData>,
 
+    /// Max number of in-flight sends
+    pub(crate) send_concurrency: usize,
+
     /// Whether to skip duplicate txns or bundles
     pub(crate) skip_duplicate: bool,
 }
@@ -121,6 +124,7 @@ pub struct TransactionServiceConfig {
     pub check_confirmation_frequency: Option<Duration>,
     pub rpc_config: Option<RpcSendTransactionConfig>,
     pub skip_duplicate: Option<bool>,
+    pub send_concurrency: Option<usize>,
 }
 
 /// Handle for communicating with the transaction service
@@ -198,6 +202,7 @@ impl TransactionService {
                 max_retries: Some(0),
                 ..Default::default()
             }),
+            send_concurrency: config.send_concurrency.unwrap_or(5),
             skip_duplicate: config.skip_duplicate.unwrap_or(true),
             tx_sender,
         };

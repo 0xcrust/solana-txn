@@ -162,7 +162,7 @@ pub async fn get_signatures_for_address(
 
 pub async fn get_transactions_for_signatures(
     client: Arc<RpcClient>,
-    signatures: &[Signature],
+    signatures: impl Iterator<Item = Signature>,
     concurrency: Option<usize>,
     commitment: Option<CommitmentConfig>,
 ) -> anyhow::Result<Vec<Option<EncodedConfirmedTransactionWithStatusMeta>>> {
@@ -173,22 +173,20 @@ pub async fn get_transactions_for_signatures(
         max_supported_transaction_version: Some(0),
     };
 
-    let mut transactions = Vec::with_capacity(signatures.len());
-    let mut stream = futures::stream::iter(signatures)
+    let transactions = futures::stream::iter(signatures)
         .map(|signature| {
             let client = Arc::clone(&client);
             async move {
                 let tx = client
-                    .get_transaction_with_config(signature, config)
+                    .get_transaction_with_config(&signature, config)
                     .await?;
                 Ok::<_, anyhow::Error>(tx)
             }
         })
-        .buffered(concurrency);
-
-    while let Some(transaction) = stream.next().await {
-        transactions.push(transaction.ok())
-    }
+        .buffered(concurrency)
+        .map(|res| res.ok())
+        .collect::<Vec<_>>()
+        .await;
 
     Ok(transactions)
 }

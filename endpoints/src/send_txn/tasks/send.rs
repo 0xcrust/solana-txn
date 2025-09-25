@@ -6,6 +6,7 @@ use std::time::Instant;
 use ::metrics::{counter, gauge, histogram};
 use anyhow::{anyhow, bail};
 use either::Either;
+use futures::StreamExt;
 use futures::future::OptionFuture;
 use jito_protos::searcher::searcher_service_client::SearcherServiceClient;
 use jito_searcher_client::send_bundle_no_wait;
@@ -14,24 +15,28 @@ use log::{debug, error, trace};
 use solana_client::{nonblocking::rpc_client::RpcClient, rpc_config::RpcSendTransactionConfig};
 use solana_sdk::transaction::VersionedTransaction;
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use tonic::{service::interceptor::InterceptedService, transport::Channel};
 
 const SEND_ATTEMPTS: u8 = 3;
 
 pub fn send_task(
     service: &TransactionService,
-    mut new_txs_receiver: mpsc::Receiver<SendTransactionData>,
+    new_txs_receiver: mpsc::Receiver<SendTransactionData>,
 ) -> tokio::task::JoinHandle<anyhow::Result<()>> {
     let service = service.clone();
     tokio::spawn(async move {
-        while let Some(data) = new_txs_receiver.recv().await {
-            match service.process_send(data).await {
-                Err(e) => error!("send error: {}", e),
-                Ok(None) => trace!("transaction was not processed"),
-                Ok(Some(_)) => {}
-            }
-        }
-
+        let stream = ReceiverStream::new(new_txs_receiver).for_each_concurrent(
+            service.send_concurrency,
+            |data| async {
+                match service.process_send(data).await {
+                    Err(e) => error!("send error: {}", e),
+                    Ok(None) => trace!("transaction was not processed"),
+                    Ok(Some(_)) => {}
+                }
+            },
+        );
+        stream.await;
         Ok(())
     })
 }
