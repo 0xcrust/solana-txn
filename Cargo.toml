@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "core",
-    "endpoints",
+    "endpoints", "example",
     "tx-logs",
     "vendored/jito-client",
     "vendored/jito-protos",
@@ -16,6 +16,7 @@ builder-rs = "0.1.0"
 bytemuck = { version = "1.4.0" }
 dashmap = "6.1.0"
 dotenv = "0.15.0"
+env_logger = "0.10.1"
 futures = "0.3.31"
 futures-util = "0.3.31"
 graceful-endpoints = { path = "endpoints" }

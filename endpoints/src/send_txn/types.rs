@@ -48,7 +48,7 @@ pub struct SendTransactionData {
     pub config: SendTxConfig,
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize)]
 pub struct SendTxConfig {
     /// send to rpc
     pub use_rpc: bool,
@@ -71,6 +71,19 @@ pub struct SendTxConfig {
 
     /// RPC config
     pub rpc_config: Option<RpcSendTransactionConfig>,
+}
+
+impl Default for SendTxConfig {
+    fn default() -> Self {
+        SendTxConfig {
+            use_rpc: true,
+            use_jito: false,
+            retries: 0,
+            cu_price_increment: 0,
+            tip_increment: 0,
+            rpc_config: None
+        }
+    }
 }
 
 impl SendTransactionData {
